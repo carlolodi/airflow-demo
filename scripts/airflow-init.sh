@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+
+# Purpose: one-time (idempotent) initialization for the local Docker Compose Airflow stack.
+# This runs in the `airflow-init` service to migrate the metadata DB and create a default
+# admin user + default connections before starting the scheduler/webserver.
+
 set -euo pipefail
 
 echo "[airflow-init] Migrating metadata DB..."
