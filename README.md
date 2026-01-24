@@ -4,6 +4,39 @@ This repository is a learning sandbox for **Apache Airflow** concepts.
 
 Airflow is an **orchestrator**: it helps you define, schedule, run, and monitor *workflows* made of discrete steps (tasks). You describe workflows as code, and Airflow takes care of when and how they run.
 
+## Quickstart (local Docker)
+
+Prereqs: Docker Desktop (or any Docker engine with `docker compose`).
+
+1. (Optional) Copy `.env.example` to `.env` and adjust values.
+2. Initialize the Airflow metadata DB and create a local admin user:
+
+	`docker compose up airflow-init`
+
+3. Start the scheduler + web UI:
+
+	`docker compose up -d`
+
+4. Open the UI: http://localhost:8080
+
+Default login (from `.env.example`): `admin` / `admin`.
+
+## Do we need `requirements.txt`?
+
+For this repo: **yes, but only for the Docker image**.
+
+- Airflow itself is provided by the base image (`apache/airflow:...`).
+- [requirements.txt](requirements.txt) is where you add *extra* Python deps/provider packages used by your DAGs (e.g., HTTP/Postgres providers).
+- On Windows, installing Airflow directly with `pip` is usually painful; running via Docker is the simplest path.
+
+To stop:
+
+- `docker compose down`
+
+To fully reset (deletes the Postgres volume/state):
+
+- `docker compose down -v`
+
 ## What Apache Airflow is (and isn’t)
 
 **Airflow is great for**:
@@ -109,9 +142,9 @@ These are the moving parts you’ll hear about constantly:
 - **Scheduler**: decides what should run, and when
 - **Metadata DB**: stores state (runs, task instances, retries, etc.)
 - **Executor**: decides *where/how* tasks execute
-	- `SequentialExecutor` (simple, one task at a time)
-	- `LocalExecutor` (parallel on one machine)
-	- `CeleryExecutor` / `KubernetesExecutor` (distributed)
+  - `SequentialExecutor` (simple, one task at a time)
+  - `LocalExecutor` (parallel on one machine)
+  - `CeleryExecutor` / `KubernetesExecutor` (distributed)
 
 ## Practical best practices (early on)
 
@@ -121,31 +154,40 @@ These are the moving parts you’ll hear about constantly:
 - Log clearly; logs are your primary debugging tool.
 - Treat Airflow as orchestration glue: delegate heavy compute to purpose-built systems.
 
-## How to use this repo
+## Repo layout
 
-This repo is intended to contain simple example DAGs and configuration as you learn.
+- `dags/` — demo DAGs (workflow definitions)
+- `data/` — local files used by dataset demos (mounted into containers)
+- `logs/` — task logs (generated at runtime)
+- `plugins/` — optional custom plugins/operators
+- `scripts/` — helper scripts used by Docker Compose
+- `docker-compose.yaml` — local Airflow stack (webserver + scheduler + Postgres)
 
-Suggested structure (as you grow it):
+## Demo DAGs (what to learn)
 
-- `dags/` — DAG definitions
-- `plugins/` — custom operators/hooks (optional)
-- `docker-compose.yaml` — local Airflow (common for demos)
+Each DAG is small on purpose; the goal is to isolate one idea at a time.
 
-If you add a local docker setup, consider documenting:
+- `demo_00_hello_taskflow` ([dags/00_hello_taskflow.py](dags/00_hello_taskflow.py))
+	- TaskFlow API, dependencies, XCom via return values
+- `demo_01_scheduling_and_catchup` ([dags/01_scheduling_and_catchup.py](dags/01_scheduling_and_catchup.py))
+	- `schedule`, `start_date`, `catchup`, run creation behavior
+- `demo_02_retries_timeouts_idempotency` ([dags/02_retries_timeouts_idempotency.py](dags/02_retries_timeouts_idempotency.py))
+	- retries, retry delay, timeouts, designing retry-safe tasks
+- `demo_03_branching_and_trigger_rules` ([dags/03_branching_and_trigger_rules.py](dags/03_branching_and_trigger_rules.py))
+	- branching, skipped tasks, joining branches with trigger rules
+- `demo_04_sensors_reschedule_mode` ([dags/04_sensors_reschedule_mode.py](dags/04_sensors_reschedule_mode.py))
+	- sensors, `poke` vs `reschedule` mode, worker-slot usage
+- `demo_06_dataset_producer` ([dags/06_dataset_producer.py](dags/06_dataset_producer.py))
+	- datasets (data-aware scheduling): producing dataset events
+- `demo_07_dataset_consumer` ([dags/07_dataset_consumer.py](dags/07_dataset_consumer.py))
+	- datasets: triggering a DAG when a dataset updates
+- `demo_08_variables_and_templating` ([dags/08_variables_and_templating.py](dags/08_variables_and_templating.py))
+	- Variables + Jinja templating with common context values
+- `demo_09_task_groups_and_dynamic_mapping` ([dags/09_task_groups_and_dynamic_mapping.py](dags/09_task_groups_and_dynamic_mapping.py))
+	- TaskGroups (UI organization) + dynamic task mapping
 
-- How to start Airflow (`docker compose up`)
-- Where the UI runs (usually `http://localhost:8080`)
-- Default credentials (if any)
+## Suggested exercises
 
-## Next steps
-
-Good beginner exercises:
-
-1. Create a “hello world” DAG with two tasks and a dependency.
-2. Add retries and a deliberate failure to see task states.
-3. Experiment with `catchup` and see how many runs get created.
-4. Use XCom for a small value; use a file/DB for large data.
-
----
-
-If you’d like, tell me how you plan to run Airflow for this demo (Docker Compose? Astronomer? local `pip install apache-airflow`?), and I can tailor this README with exact startup steps and a first example DAG.
+1. Trigger each DAG manually and inspect logs + graph view.
+2. In the UI, set Variable `demo_message` and rerun `demo_08_variables_and_templating`.
+3. Run `demo_06_dataset_producer` and watch `demo_07_dataset_consumer` trigger.
