@@ -1,0 +1,13 @@
+{
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportMissingImports": "none",
+        "reportAttributeAccessIssue": "none"
+    },
+    "python.analysis.extraPaths": [],
+    "python.linting.pylintArgs": [
+        "--rcfile=${workspaceFolder}/.pylintrc"
+    ],
+    "pylint.args": [
+        "--rcfile=${workspaceFolder}/.pylintrc"
+    ]
+}

@@ -1,0 +1,9 @@
+# Extra Python dependencies for this demo Airflow image.
+#
+# Notes:
+# - Airflow itself is provided by the base Docker image (see Dockerfile).
+# - Add provider packages here as you introduce integrations (Postgres, HTTP APIs, etc.).
+# - Keep this file small and intentional; prefer providers over ad-hoc clients when available.
+
+apache-airflow-providers-http
+apache-airflow-providers-postgres

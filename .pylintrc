@@ -1,0 +1,20 @@
+[MESSAGES CONTROL]
+# Airflow's >> and << operators for task dependencies return values but are used
+# for their side effects (setting upstream/downstream). Pylint doesn't understand this.
+disable=
+    pointless-statement,
+    expression-not-assigned,
+    missing-module-docstring,
+    invalid-name,
+    import-error,
+    no-name-in-module
+
+[MASTER]
+# Ignore auto-generated and test files
+ignore=__pycache__
+
+# The DAG filenames intentionally start with numbers to keep ordering in the UI.
+ignore-patterns=^\d+_.*\.py$
+
+[FORMAT]
+max-line-length=120
